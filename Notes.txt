@@ -1,0 +1,768 @@
+
+grep command
+
+The grep command is used to search text. 
+It searches the given file for lines containing a match to the given strings or words. 
+It is one of the most useful commands on Linux and Unix-like system. 
+Let us see how to use grep on a Linux or Unix like system.
+
+************************************************************************************************************
+
+Linux Users
+
+Every user on a Linux system, whether created as an account for a real human being or associated with a particular service or system function, is stored in a file called "/etc/passwd". The "/etc/passwd" file contains information about the users on the system.
+
+[a] w command – 
+Shows information about the users currently on the machine, and their processes.
+
+[b] who command – 
+Shows information about users who are currently logged in.
+
+[c] users command – 
+Shows the login names of the users currently on the system, in sorted order, space separated, on a single line. It reads all information from /var/run/utmp file.
+
+
+System and Normal Users
+
+Each user has a numeric user ID called UID. If not specified when creating a new user with the useradd command, the UID will be automatically selected from the /etc/login.defs file depending on the UID_MIN and UID_MIN values.
+
+To check the UID_MIN and UID_MIN values on your system you can use the following command:
+$grep -E '^UID_MIN|^UID_MAX' /etc/login.defs
+
+
+From the output above, we can see that all normal users should have a UID between 1000 and 60000. Knowing the minimal and maximal value allow us to query a list of all normal users in our system.
+
+The command below will list all normal users in our Linux system:
+$getent passwd {1000..60000}
+
+***********************************************************************************************************
+
+Linux Groups
+
+In Linux, a group is a collection of users. The main purpose of the groups is to define a set of privileges like read, write, or execute permission for a given resource that can be shared among the users within the group. Users can be added to an existing group to utilize the privileges it grants.
+
+There are two types of groups that a user can belong to:
+
+Primary or login group – 
+	is the group that is assigned to the files that are created by the user. Usually, the name of the primary group is the same as the name of the user. Each user must belong to exactly one primary group.
+
+Secondary or supplementary group - 
+	used to grant certain privileges to a set of users. A user can be a member of zero or more secondary groups.
+
+List all Groups a User is a Member of
+
+There are multiple ways to find out the groups a user belongs to.
+
+The primary user’s group is stored in the /etc/passwd file and the supplementary groups, if any, are listed in the /etc/group file.
+
+One way to find the user’s groups is to list the contents of those files using cat, less or grep. 
+
+Another easier option is to use a command whose purpose is to provide information about the system’s users and $groups.
+
+
+Using the groups command
+
+The most memorable command to list all groups a user is a member of is the groups command. 
+When executed without an argument the command will print a list of all groups the currently logged in user belongs to:
+$groups
+
+
+To get a list of all groups a specific user belongs to, provide the username to the groups command as an argument:
+$groups ravit
+
+
+Using the id command
+The id command prints information about the specified user and its groups. 
+If the username is omitted it shows information for the current user.
+$id ravit
+
+
+The following command will print the names of the groups the current user is a member of:
+$id -nG
+
+List All Members of a Group
+To list all members of a group, use the getent group command followed by the group name.
+$getent group developers
+
+Add a New Group
+
+$sudo groupadd students
+
+Add an Existing User Account to a Group
+
+$sudo usermod -a -G students ojast
+
+Change a User’s Primary Group
+
+While a user account can be part of multiple groups, one of the groups is always the “primary group” and the others are “secondary groups”. The user’s login process and files and folders the user creates will be assigned to the primary group.
+$usermod -g students username
+
+Create a New User and Assign a Group in One Command
+$useradd -G students aarusht
+
+To assign a password for the user create
+$sudo passwd aarusht
+
+Add a User to Multiple Groups
+$usermod -a -G students, presenters, trainers  aarusht
+
+
+View All Groups on the System
+$getent group
+
+Remove user from group
+$sudo deluser aarusht students
+
+**************************************************************************************************************
+
+Ownership
+
+Linux is designed to support a large number of users. Because of this, it needs to keep careful track of who is allowed to access a file, and how they can access it. These access rules are called permissions.
+
+There are three major types of file permissions:
+
+User permissions. 
+These permissions apply to a single user who has special access to the file. This user is called the owner.
+
+Group permissions. 
+These apply to a single group of users who have access to the file. This group is the owning group.
+
+Other permissions. 
+These apply to every other user on the system. These users are known as others, or the world.
+
+
+When a file is created, its owner is the user who created it, and the owning group is the user's current group.
+chown can change these values to something else.
+
+
+Notes on usage
+
+user and group can be specified by name or by number.
+
+Only root can change the owner of a file. 
+The owner cannot transfer ownership, unless the owner is root, or uses sudo to run the command.
+
+The owning group of a file can be changed by the file's owner, if the owner belongs to that group. The owning group of a file can be changed, by root, to any group. Members of the owning group other than the owner cannot change the file's owning group.
+
+The owning group can also be changed by using the chgrp command. chgrp and chown use the same system call, and are functionally identical.
+
+Certain miscellaneous file operations can be performed only by the owner or root. For instance, only owner or root can manually change a file's "atime" or "mtime" (access time or modification time) using the touch command.
+
+Because of these restrictions, you will almost always want to run chown as root, or with sudo.
+
+
+***************************************************************************************************
+
+
+
+File Permissions
+
+On a Linux system, each file and directory is assigned access rights for the owner of the file, the members of a group of related users, and everybody else. Rights can be assigned to read a file, to write a file, and to execute a file (i.e., run the file as a program).
+
+To see the permission settings for a file, we can use the ls command. As an example, we will look at the bash program which is located in the /bin directory:
+
+
+chmod
+
+The chmod command is used to change the permissions of a file or directory. 
+To use it, you specify the desired permission settings and the file or files that you wish to modify. 
+There are two ways to specify the permissions. 
+
+In this lesson we will focus on one of these, called the octal notation method.
+
+It is easy to think of the permission settings as a series of bits (which is how the computer thinks about them). Here's how it works:
+
+rwx rwx rwx = 111 111 111
+rw- rw- rw- = 110 110 110
+rwx --- --- = 111 000 000
+
+and so on...
+
+rwx = 111 in binary = 7
+rw- = 110 in binary = 6
+r-x = 101 in binary = 5
+r-- = 100 in binary = 4
+
+Now, if you represent each of the three sets of permissions (owner, group, and other) as a single digit, you have a pretty convenient way of expressing the possible permissions settings. For example, if we wanted to set some_file to have read and write permission for the owner, but wanted to keep the file private from others, we would:
+
+
+[me@linuxbox me]$ chmod 600 some_file
+
+
+Value	Meaning
+
+777	(rwxrwxrwx) No restrictions on permissions. Anybody may do anything. Generally not a desirable setting.
+
+755	(rwxr-xr-x) The file's owner may read, write, and execute the file. 
+	All others may read and execute the file. This setting is common for programs that are used by all users.
+
+700	(rwx------) The file's owner may read, write, and execute the file. 
+	Nobody else has any rights. This setting is useful for programs that only the owner may use and 
+	must be kept private from others.
+
+666	(rw-rw-rw-) All users may read and write the file.
+
+644	(rw-r--r--) The owner may read and write a file, while all others may only read the file. 
+	A common setting for data files that everybody may read, but only the owner may change.
+
+600	(rw-------) The owner may read and write a file. All others have no rights. 
+	A common setting for data files that the owner wants to keep private.
+
+
+
+Directory Permissions
+
+The chmod command can also be used to control the access permissions for directories. 
+Again, we can use the octal notation to set permissions, but the meaning of the r, w, and x attributes is different:
+
+r - Allows the contents of the directory to be listed if the x attribute is also set.
+w - Allows files within the directory to be created, deleted, or renamed if the x attribute is also set.
+x - Allows a directory to be entered (i.e. cd dir).
+
+
+
+Here are some useful settings for directories:
+
+Value	Meaning
+
+777	(rwxrwxrwx) No restrictions on permissions. Anybody may list files, create new files in the directory and 
+	delete files in the directory. Generally not a good setting.
+
+755	(rwxr-xr-x) 
+	The directory owner has full access. All others may list the directory, 
+	but cannot create files nor delete them. 
+	This setting is common for directories that you wish to share with other users.
+
+700	(rwx------) 
+	The directory owner has full access. Nobody else has any rights. 
+	This setting is useful for directories that only the owner may use and must be kept private from others.
+
+
+Becoming the Superuser for a Short While
+
+It is often necessary to become the superuser to perform important system administration tasks, but as you have been warned, you should not stay logged in as the superuser. In most distributions, there is a program that can give you temporary access to the superuser's privileges. This program is called su (short for substitute user) and can be used in those cases when you need to be the superuser for a small number of tasks. To become the superuser, simply type the su command. You will be prompted for the superuser's password:
+
+[me@linuxbox me]$ su
+Password:
+[root@linuxbox me]#
+
+
+Changing File Ownership
+
+chown you some_file
+
+Changing Group Ownership
+
+The group ownership of a file or directory may be changed with chgrp. This command is used like this:
+
+[me@linuxbox me]$ chgrp new_group some_file
+
+In the example above, we changed the group ownership of some_file from its previous group to "new_group".
+You must be the owner of the file or directory to perform a chgrp.
+
+
+*********************************************************************************************************************
+
+Job Control
+
+
+Multitasking nature of Linux using CLI.
+
+As with any multitasking operating system, Linux executes multiple, simultaneous processes. 
+They appear simultaneous. 
+Actually, a single processor computer can only execute one process at a time but the Linux 
+kernel manages to give each process its turn at the processor and each appears to be running at the same time.
+
+There are several commands that can be used to control processes. They are:
+
+ps 	- list the processes running on the system
+kill 	- send a signal to one or more processes (usually to "kill" a process)
+jobs 	- an alternate way of listing your own processes
+bg 	- put a process in the background
+fg 	- put a process in the forground
+
+
+A Practical Example:
+
+While it may seem that this subject is rather obscure, it can be very practical for the average user who mostly works with the graphical user interface. You might not know this, but most (if not all) of the graphical programs can be launched from the command line. Here's an example: there is a small program supplied with the X Window system called xload which displays a graph representing system load. You can excute this program by typing the following:
+
+[me@linuxbox me]$ xload
+
+
+Notice that the small xload window appears and begins to display the system load graph. Notice also that your prompt did not reappear after the program launched. The shell is waiting for the program to finish before control returns to you. If you close the xload window, the xload program terminates and the prompt returns.
+
+
+Putting a Program into the Background
+
+Now, in order to make life a little easier, we are going to launch the xload program again, but this time we will put it in the background so that the prompt will return. To do this, we execute xload like this:
+
+me@linuxbox me]$ xload &
+[1] 1223
+
+[me@linuxbox me]$
+
+In this case, the prompt returned because the process was put in the background.
+
+Now imagine that you forgot to use the "&" symbol to put the program into the background. There is still hope. You can type Ctrl-z and the process will be suspended. The process still exists, but is idle. To resume the process in the background, type the bg command (short for background). Here is an example:
+
+
+me@linuxbox me]$ xload
+[2]+ Stopped xload
+
+[me@linuxbox me]$ bg
+[2]+ xload &
+
+
+
+Listing Your Processes
+
+Now that we have a process in the background, it would be helpful to display a list of the processes we have launched. To do this, we can use either the jobs command or the more powerful ps command.
+
+[me@linuxbox me]$ jobs
+[1]+ Running xload &
+
+[me@linuxbox me]$ ps
+
+	PID 	TTY 	TIME C	MD
+	1211 	pts/4 00:00:00 bash
+	1246 	pts/4 00:00:00 xload
+	1247 	pts/4 00:00:00 ps
+[me@linuxbox me]$
+
+
+Killing a Process
+
+Suppose that you have a program that becomes unresponsive; how do you get rid of it? You use the kill command, of course. Let's try this out on xload. First, you need to identify the process you want to kill. You can use either jobs or ps, to do this. If you use jobs you will get back a job number. With ps, you are given a process id (PID). We will do it both ways:
+
+[me@linuxbox me]$ xload &
+[1] 1292
+
+[me@linuxbox me]$ jobs
+[1]+ Running xload &
+
+[me@linuxbox me]$ kill %1
+[me@linuxbox me]$ xload &
+[2] 1293
+[1] Terminated xload
+
+[me@linuxbox me]$ ps
+	PID TTY TIME CMD
+	1280 pts/5 00:00:00 bash
+	1293 pts/5 00:00:00 xload
+	1294 pts/5 00:00:00 ps
+
+[me@linuxbox me]$ kill 1293
+[2]+ Terminated xload
+
+[me@linuxbox me]$
+
+
+A Little More About kill
+
+While the kill command is used to "kill" processes, its real purpose is to send signals to processes. Most of the time the signal is intended to tell the process to go away, but there is more to it than that. Programs (if they are properly written) listen for signals from the operating system and respond to them, most often to allow some graceful method of terminating. For example, a text editor might listen for any signal that indicates that the user is logging off, or that the computer is shutting down. When it receives this signal, it saves the work in progress before it exits. The kill command can send a variety of signals to processes. Typing:
+
+    kill -l
+
+
+
+Use the ps command to get the process id (PID) of the process you want to terminate.
+Issue a kill command for that PID.
+If the process refuses to terminate (i.e., it is ignoring the signal), send increasingly harsh signals until it does terminate.
+
+
+[me@linuxbox me]$ ps x | grep bad_program
+
+	PID TTY STAT TIME COMMAND
+	2931 pts/5 SN 0:00 bad_program
+
+[me@linuxbox me]$ kill -SIGTERM 2931
+[me@linuxbox me]$ kill -SIGKILL 2931
+
+
+In the example above I used the ps command with the x option to list all of my processes (even those not launched from the current terminal). 
+
+In addition, I piped the output of the ps command into grep to list only list the program I was interested in. 
+Next, I used kill to issue a SIGTERM signal to the troublesome program. 
+In actual practice, it is more common to do it in the following way since the default signal sent by kill is SIGTERM and 
+kill can also use the signal number instead of the signal name:
+
+[me@linuxbox me]$ kill 2931
+
+Then, if the process does not terminate, force it with the SIGKILL signal:
+
+[me@linuxbox me]$ kill -9 2931
+
+******************************************************************************************************************************
+
+Named Pipes
+
+In most Unix-like systems, it is possible to create a special type of file called a namedpipe. 
+Named pipes are used to create a connection between two processes and can be used just like other types of files. 
+They are not that popular, but they’re good to know about.
+There is a common programming architecture called client-server, which can make use of a communication method such as named pipes, as well as other kinds of interprocess communication such as network connections.
+
+The most widely used type of client-server system is, of course, a web browser communi
+
+cating with a web server. The web browser acts as the client, making requests to the server, 
+ and the server responds to the browser with web pages.
+Named pipes behave like files but actually form first-in first-out (FIFO) buffers. 
+As with ordinary (unnamed) pipes, data goes in one end and emerges out the other. 
+With namedpipes, it is possible to set up something like this:
+
+process1 > named_pipe
+
+and this:
+
+process2 < named_pipe
+
+and it will behave like this:
+
+process1 | process2
+
+Setting Up a Named Pipe
+First, we must create a named pipe. This is done using the mkfifo command.
+
+$[me@linuxbox ~]$ mkfifo seedpipe
+$[me@linuxbox ~]$ ls -l  seedpipe
+
+prw-r--r-- 1 me me 0 2009-07-17 06:41 pipe1
+
+Here we use mkfifo to create a named pipe called pipe1. Using ls, 
+we examine the file and see that the first letter in the attributes field is “p”,
+indicating that it is a named pipe.
+
+
+Using Named Pipes
+
+To demonstrate how the named pipe works, we will need two terminal windows (or alternately, two virtual consoles). 
+In the first terminal, we enter a simple command and redirect its output to the named pipe.
+
+
+$[me@linuxbox ~]$ ls -l > seedpipe
+
+After we press the Enter key, the command will appear to hang. 
+This is because there is nothing receiving data from the other end of the pipe yet. 
+When this occurs, it is said that the pipe is blocked. 
+This condition will clear once we attach a process to the other end and it begins to read input from the pipe. 
+Using the second terminal window, we enter this command:
+
+$[me@linuxbox ~]$ cat < seedpipe
+
+The directory listing produced from the first terminal window appears in the second terminal as the output from the cat command. 
+The ls command in the first terminal successfully completes once it is no longer blocked.
+
+************************************************************************************************************
+
+Makfiles in Linux
+
+As beginners, most of the C/C++ programmers compile their programs on Linux command line by running the gcc or g++ compiler commands. But, as their projects start to grow, compilation through a single command does not remain easy and effective.
+
+As a solution to all the compilation related problems, you need to understand the concept of makefiles. This topic would be covered in a series of articles and in this first part, we will discuss the very basics of makefiles in Linux.
+
+Suppose your project consists of the following three files kept in a directory:
+
+test.c
+anotherTest.c
+test.h
+
+As a beginner, you'll run the following command again and again to compile your project :
+
+gcc -Wall test.c anotherTest.c -o test -I.
+
+This is fine as long as your project contains just a few files . Now suppose, your project grows and now contains 10 more source and header files. What will you do then?
+
+Many would argue that they will extend the existing command by adding the names of those new files. But, what if you somehow loose this command or switch to another system? Will you again type the long command?
+
+Also, suppose your project grows into a big project that contains hundreds of files, and takes 5-10 minutes to compile. Now, suppose you add a simple printf debug line in one of the .c files but use a single command to recompile. Wouldn't it be inefficient for a program to take 10 minutes to compile, even if a single line is changed/added in one of the source files?
+
+Makefiles
+
+A makefile is a special file (named as 'Makefile' only) that consists of targets, dependencies and commands, structured in a way that makes it easy for a programmer to compile the program.
+
+Here is a very basic syntax of a makefile:
+
+target: dependencies
+command
+
+**************************************************************************************************************
+
+Linux Logs
+
+Linux logs provide a timeline of events for the Linux operating system, applications, and system, and are a valuable troubleshooting tool when you encounter issues. Essentially, analyzing log files is the first thing an administrator needs to do when an issue is discovered.
+
+For desktop app-specific issues, log files are written to different locations. 
+For example, Chrome writes crash reports to ‘~/.chrome/Crash Reports’). Where a desktop application writes logs depends on the developer, and if the app allows for custom log configuration.
+
+Files are stored in plain-text and can be found in the /var/log directory and subdirectory. There are Linux logs for everything: system, kernel, package managers, boot processes, Xorg, Apache, MySQL. In this article, the topic will focus specifically on Linux system logs.
+
+
+How to View Linux Logs:
+
+1.Linux logs can be viewed with the command cd/var/log, 
+
+2.then by typing the command ls to see the logs stored under this directory. 
+
+One of the most important logs to view is the syslog, which logs everything but auth-related messages.
+
+Issue the command var/log/syslog to view everything under the syslog, but zooming in on a specific issue will take a while, since this file tends to be long. You can use Shift+G to get to the end of the file, denoted by “END.”
+
+You can also view logs via dmesg, which prints the kernel ring buffer. It prints everything and sends you to the end of the file. From there, you can use the command dmesg | less to scroll through the output. If you want to view log entries for the user facility, you need to issue the command dmesg –facility=user.
+
+Lastly, you can use the tail command to view log files. It is one of the handiest tools you can use, since it only shows the last part of the logs, where the problem usually lies. For this, use the command tail 
+/var/log/syslog or 
+
+tail -f /var/log/syslog. 
+
+tail will continue watching the log file, and print out the next line written to the file, allowing you to follow what is written to syslog as it happens. Check out 20 ways to tail a log file post.
+
+For a specific number of lines (example, the last 5 lines) key in tail -f -n 5 /var/log/syslog, which prints the most recent 5 lines. Once a new line comes, the old one gets removed. To escape the tail command, press Ctrl+X.
+
+
+Most Important Linux Logs
+
+Most directories can be grouped into one of four categories:
+
+	* Application Logs
+	* Event Logs
+	* Service Logs
+	* System Logs
+
+Monitoring every log is a monumental task.The logs that you monitor may depend on your goals or other variables, but there is some consensus about some of the most critical, must-monitor logs, such as:
+
+/var/log/syslog or /var/log/messages: 
+
+general messages, as well as system-related information. 
+Essentially, this log stores all activity data across the global system. 
+Note that activity for Redhat-based systems, 
+such as CentOS or Rhel, are stored in messages, 
+
+while Ubuntu and other Debian-based systems are stored in Syslog.
+
+/var/log/auth.log or /var/log/secure: 
+
+store authentication logs, including both successful and failed logins and authentication methods. Again, the system type dictates where authentication logs are stored; Debian/Ubuntu information is stored in 
+
+/var/log/auth.log,
+		 while Redhat/CentrOS is stored in /var/log/secure.
+
+/var/log/boot.log: 
+		a repository of all information related to booting and any messages logged during startup.
+
+/var/log/maillog or var/log/mail.log: 
+	stores all logs related to mail servers, 
+	useful when you need information about postfix, smtpd, 
+	or any email-related services running on your server.
+
+/var/log/kern:
+ 	stores Kernel logs and warning data. 
+	This log is valuable for troubleshooting custom kernels as well.
+
+/var/log/dmesg:
+	messages relating to device drivers. 
+	The command dmesg can be used to view messages in this file.
+
+/var/log/faillog: 
+	contains information all failed login attempts, 
+	which is useful for gaining insights on attempted security breaches, 
+	such as those attempting to hack login credentials as well as brute-force attacks.
+
+/var/log/cron: 
+	stores all Crond-related messages (cron jobs), 
+	such as when the cron daemon initiated a job, 
+	related failure messages, etc.
+
+/var/log/yum.log: 
+	if you install packages using the yum command, 
+	this log stores all related information, 
+	which can be useful in determining whether a package and all components were correctly installed.
+
+/var/log/httpd/: 
+
+	a directory containing error_log and access_log files of the Apache httpd daemon. 
+	The error_log contains all errors encountered by httpd. 
+	These errors include memory issues and other system-related errors. 
+	access_log contains a record of all requests received over HTTP.
+
+/var/log/mysqld.log or /var/log/mysql.log : 
+	MySQL log file that logs all debug, failure and success messages. 
+	Contains information about the starting, stopping and restarting of MySQL daemon mysqld. 
+	This is another instance where the system dictates the directory; 
+	RedHat, CentOS, Fedora, and other RedHat-based systems use /var/log/mysqld.log, 
+	while Debian/Ubuntu use the /var/log/mysql.log directory.
+
+
+************************************************************************************************************
+
+Cron 
+
+Cron jobs are an incredibly useful Linux tool aimed at saving you time by scheduling tasks within your server. 
+A programmed cron task will execute commands within a script by the minute, day, week or month. 
+They can be scheduled to do many tasks including backing up your server’s files nightly, updating inventory orders in a database or even compressing files for migrating. 
+
+Repetitive tasks become a cinch when incorporating a cron job. 
+
+While there are numerous ways to run a cron task, we will be using the crontab option that is inherent within Ubuntu to set up a nightly backup of our website.
+
+Step 1: Update your server. 
+
+$apt-get update && apt-get upgrade
+
+Step 2: Verify if the cron package is installed.
+
+$dpkg -l cron
+
+Ensure that the cron service is running with the following command:
+$systemctl status cron
+
+Step 3: Configure the cron job.
+
+crontab -e
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# | .------------- hour (0 - 23)
+# | | .---------- day of month (1 - 31)
+# | | | .------- month (1 - 12) OR jan,feb,mar,apr ...
+# | | | | .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# | | | | |
+# * * * * * user-name command to be executed
+
+To set default editor nano for crontab 
+$export VISUAL=nano; 
+crontab -er
+
+To view Root’s Cron Jobs
+crontab -l
+
+View a users Cron jobs
+$crontab -u ojast -l
+
+View Daily Cron Jobs
+$ls -la /etc/cron.daily/
+
+view a specific daily cron job:
+less /etc/cron.daily/filename
+
+Remove all Cron Jobs
+$crontab -r
+
+
+
+***********************************************************************************************************************************
+
+Linux Services
+
+a service is a process or group of processes (commonly known as daemons) 
+	running continuously in the background, 
+	waiting for requests to come in (especially from clients).
+
+	Linux supports different ways to manage (start, stop, restart, enable auto-start at system boot, etc.) services, 
+	typically through a process or service manager. 
+	Most if not all modern Linux distributions now use the same process manager: systemd.
+	Systemd is a system and service manager for Linux
+	
+
+The service  --status-all command will list all services on your Ubuntu Server (Both running services and Not running Services).
+
+service  --status-all
+
+service --status-all | grep '\[ + \]'
+
+service --status-all | grep '\[ - \]'
+
+
+
+List Services with systemctl command
+
+systemctl list-units
+systemctl list-units -a
+systemctl list-units -a --state=inactive
+
+
+
+there is a need to enable or disable services temporarily or permanently on our Ubuntu system. Sometimes, we may require certain services to start up automatically on boot up e.g ssh or web servers and sometimes we may need to disable services we no longer require and are hogging the CPU and RAM.
+
+To start a service in systemd run the command as shown:
+
+systemctl start service-name
+
+systemctl start apache2
+
+systemctl start apache2
+
+
+
+To enable apache2 service on boot up run
+
+	$systemctl enable apache2
+
+
+To disable apache2 service on boot up run
+
+	$systemctl disable apache2
+
+
+To restart the service
+	$systemctl restart apache2
+
+
+To check whether the service is currently configured to start on the next boot up
+
+	$systemctl is-enabled apache2
+
+
+To check whether the service is active
+
+	$systemctl is-active apache2
+
+
+
+How to remove Systemd services completely
+
+1. First, stop the service
+	$systemctl stop service-name
+   
+   Then disable the service
+	$systemctl disable service-name
+
+   Removing the service in systemd
+
+	$rm /etc/systemd/system/service-name
+	$rm /etc/systemd/system/service-name/[related symlinks]
+
+   Reload systemd
+
+	$systemctl daemon-reload
+
+   Finally run,
+
+	$systemctl reset-failed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
